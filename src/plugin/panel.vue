@@ -5,45 +5,38 @@
       <div class="dialogAddressBox">
         <a
           class="address"
-          :href="`https://hecoinfo.com/address/${address}`"
+          :href="`${browser.heco}/address/${address}`"
           target="_blank"
         >
-          {{ address | formatAddress }}
+          {{ address }}
         </a>
-        <!-- <i class="el-icon-document-copy" @click="handleCopy"></i> -->
-        <i
-          v-clipboard:copy="address"
-          v-clipboard:success="onCopy"
-          v-clipboard:error="onError"
-          class="el-icon-document-copy"
-        ></i>
       </div>
       <!-- list title -->
       <div class="listTitleBox">
         <p class="title">{{ $t("recentTransactions") }}</p>
-        <p class="clear" @click="CLEAR_TXNS">{{ $t("clearAll") }}</p>
+        <p class="clear">{{ $t("clearAll") }}</p>
       </div>
       <!-- list -->
       <ul class="listBox">
-        <li v-for="(item, index) in Object.keys(txns)" :key="index">
+        <li v-for="(item, index) in list" :key="index">
           <a
             class="hash"
-            :href="`https://hecoinfo.com/tx/${txns[item].transactionHash}`"
+            :href="`${browser.heco}/tx/${item.hash}`"
             target="_blank"
           >
-            {{ txns[item].transactionHash | formatAddress }}
+            {{ item.hash }}
           </a>
           <p
             class="status pending el-icon-loading"
-            v-if="txns[item].txStatus === 'pending'"
+            v-if="item.status === 'pending'"
           ></p>
           <p
             class="status success el-icon-success"
-            v-if="txns[item].txStatus === 'success'"
+            v-if="item.status === 'success'"
           ></p>
           <p
             class="status failed el-icon-warning"
-            v-if="txns[item].txStatus === 'failed'"
+            v-if="item.status === 'failed'"
           ></p>
         </li>
       </ul>
@@ -54,16 +47,71 @@
 <script>
 export default {
   name: "test-panel", // 这里需要注意下，我们是采用的全局注入我们的组件，所以在后面因为我们的组件后，会直接使用这个命名的标签
-  props: ["list"],
+  props: ["chain", "address", "browserurl"],
   data() {
     return {
-      checkedNumber: "",
+      dialogVisible: true,
+      browser: {
+        eth: "https://cn.etherscan.com",
+        heco: "https://hecoinfo.com",
+      },
+      list: [],
+      data: {},
     };
   },
   components: {},
   methods: {
-    clickThisNumber(e) {
-      this.checkedNumber = this.checkedNumber.concat(e.currentTarget.innerHTML);
+    addItem({ item, chain, address }) {
+      console.log("--- addItem ---", { item, chain, address });
+      if (!this.data[address]) {
+        this.data[address] = {};
+        this.data[address][chain] = [];
+      } else if (!this.data[address][chain]) {
+        this.data[address][chain] = [];
+      }
+      this.data[address][chain].unshift(item);
+      this.save({ address, chain });
+    },
+    changeItem({ item, chain, address }) {
+      console.log("--- changeItem ---", { item, chain, address });
+      if (!this.data[address]) {
+        throw Error(`请核对${address}是否正确`);
+      }
+      if (!this.data[address][chain]) {
+        throw Error(`请核对${chain}是否正确`);
+      }
+      this.data[address][chain].forEach((currentItem, index) => {
+        if (item.hash === currentItem.hash) {
+          this.data[address][chain].splice(index, 1, item);
+          this.save({ address, chain });
+        }
+      });
+    },
+    removeItem({ item, chain, address }) {
+      console.log("--- removeItem ---", { item, chain, address });
+      if (!this.data[address]) {
+        throw Error(`请核对${address}是否正确`);
+      }
+      if (!this.data[address][chain]) {
+        throw Error(`请核对${chain}是否正确`);
+      }
+      this.data[address][chain].forEach((currentItem, index) => {
+        if (item.hash === currentItem.hash) {
+          this.data[address][chain].slice(index, 1);
+          this.save({ address, chain });
+        }
+      });
+    },
+    save({ address, chain }) {
+      this.list = this.data[address][chain];
+      sessionStorage[address + "-" + chain] = JSON.stringify(
+        this.data[address][chain]
+      );
+    },
+    clearAll({ address, chain }) {
+      console.log("--- clearAll ---", { chain, address });
+      this.data[address][chain] = [];
+      this.save({ address, chain });
     },
   },
 };
@@ -90,3 +138,16 @@ export default {
   display: none;
 }
 </style>
+
+<i18n>
+{
+  "en": {
+    "recentTransactions": "Recent Transactions",
+    "clearAll": "clear all"
+  },
+  "zh": {
+    "recentTransactions": "最近的交易",
+    "clearAll": "清除所有"
+  }
+}
+</i18n>

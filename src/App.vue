@@ -2,7 +2,7 @@
   <div id="app">
     <img alt="Vue logo" @click="addItem" src="./assets/logo.png" />
     <HelloWorld msg="Welcome to Your Vue.js App" />
-    <test-panel ref="panel" :list="list" />
+    <test-panel ref="panel" address="0x" chain="eth" :list="list" />
     <test-toast ref="toast" />
   </div>
 </template>
@@ -17,20 +17,26 @@ export default {
   },
   data() {
     return {
-      list: [],
+      list: [
+        {
+          address: "0x",
+          hash: "0x",
+          status: "success",
+        },
+      ],
     };
   },
-  created() {
-    const chain = 'eth'
-    this.list = this.$myBus.data[chain];
-    this.$myBus.onchange = (chain) => {
-      console.log("change", chain);
-      this.list = this.$myBus.data[chain];
-      console.log("this.list", this.list);
-    };
-    // console.log("this.$myBus", this.$myBus);
-    this.$myBus.addItem("eth", {
-      hash: "0x1",
+  mounted() {
+    console.log(this.$refs.panel);
+    this.$refs.panel.addItem({
+      item: {
+        chain: "eth",
+        address: "0x",
+        hash: "0x1",
+        status: "success",
+      },
+      chain: "eth",
+      address: "0x",
     });
     // this.$addItemRecord("eth", "0x1");
     // this.$addItemRecord("eth", "0x2");
@@ -38,8 +44,15 @@ export default {
   },
   methods: {
     addItem() {
-      this.$myBus.addItem("eth", {
-        hash: "0x2",
+      this.$refs.panel.addItem({
+        item: {
+          chain: "eth",
+          address: "0x",
+          hash: "0x1",
+          status: "success",
+        },
+        chain: "eth",
+        address: "0x",
       });
     },
     hc() {
