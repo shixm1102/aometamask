@@ -1,143 +1,111 @@
 <template>
-  <div class="dialogWrap" v-show="dialogVisible">
-    <section class="dialogBox">
-      <!-- address -->
-      <div class="dialogAddressBox">
-        <a
-          class="address"
-          :href="`${browser.heco}/address/${address}`"
-          target="_blank"
-        >
-          {{ address }}
-        </a>
-      </div>
-      <!-- list title -->
-      <div class="listTitleBox">
-        <p class="title">{{ $t("recentTransactions") }}</p>
-        <p class="clear">{{ $t("clearAll") }}</p>
-      </div>
-      <!-- list -->
-      <ul class="listBox">
-        <li v-for="(item, index) in list" :key="index">
+  <section class="panelWrap">
+    <div class="box">
+      <div class="left">{{ balance }}</div>
+      <div class="right" @click="handleClick">{{ address }} {{ explorer }}</div>
+    </div>
+    <div class="dialogWrap" v-show="dialogVisible">
+      <section class="dialogBox">
+        <!-- address -->
+        <div class="dialogAddressBox">
           <a
-            class="hash"
-            :href="`${browser.heco}/tx/${item.hash}`"
+            class="address"
+            :href="`${explorer}/address/${address}`"
             target="_blank"
           >
-            {{ item.hash }}
+            {{ address }}
           </a>
-          <p
-            class="status pending el-icon-loading"
-            v-if="item.status === 'pending'"
-          ></p>
-          <p
-            class="status success el-icon-success"
-            v-if="item.status === 'success'"
-          ></p>
-          <p
-            class="status failed el-icon-warning"
-            v-if="item.status === 'failed'"
-          ></p>
-        </li>
-      </ul>
-    </section>
-  </div>
+        </div>
+        <!-- list title -->
+        <div class="listTitleBox">
+          <p class="title">{{ $t("recentTransactions") }}</p>
+          <p class="clear">{{ $t("clearAll") }}</p>
+        </div>
+        <!-- list -->
+        <ul class="listBox">
+          <li v-for="(item, index) in list" :key="index">
+            <a
+              class="hash"
+              :href="`${explorer}/tx/${item.txHash}`"
+              target="_blank"
+            >
+              {{ item.txHash }}
+            </a>
+            <p class="status">{{ item.status }}</p>
+            <!-- <p
+              class="status pending el-icon-loading"
+              v-if="item.status === 'pending'"
+            ></p>
+            <p
+              class="status success el-icon-success"
+              v-if="item.status === 'success'"
+            ></p>
+            <p
+              class="status failed el-icon-warning"
+              v-if="item.status === 'failed'"
+            ></p> -->
+          </li>
+        </ul>
+      </section>
+    </div>
+  </section>
 </template>
 
 <script>
 export default {
   name: "test-panel", // 这里需要注意下，我们是采用的全局注入我们的组件，所以在后面因为我们的组件后，会直接使用这个命名的标签
-  props: ["chain", "address", "browserurl"],
+  props: ["browserurl", "tokenInfo"],
   data() {
     return {
+      address: "",
+      balance: "",
+      explorer: "",
       dialogVisible: true,
-      browser: {
-        eth: "https://cn.etherscan.com",
-        heco: "https://hecoinfo.com",
-      },
       list: [],
-      data: {},
     };
   },
+  watch: {
+    browserurl() {
+      this.getBrowserUrl();
+    },
+  },
   components: {},
+  mounted() {
+    // 获取地址
+    this.$metamask.connect().then((accounts) => {
+      this.address = accounts[0];
+      // 获取余额
+      this.$metamask.getBalance(this.address).then((balance) => {
+        this.balance = balance;
+      });
+      // 获取记录
+      this.$metamask.getTxRecord().then((list) => {
+        this.list = list;
+      });
+      // 获取区块浏览器URL
+      this.getBrowserUrl();
+      this.$metamask.onChainChanged(() => {
+        this.getBrowserUrl();
+      });
+    });
+  },
   methods: {
-    addItem({ item, chain, address }) {
-      console.log("--- addItem ---", { item, chain, address });
-      if (!this.data[address]) {
-        this.data[address] = {};
-        this.data[address][chain] = [];
-      } else if (!this.data[address][chain]) {
-        this.data[address][chain] = [];
-      }
-      this.data[address][chain].unshift(item);
-      this.save({ address, chain });
+    handleClick() {
+      this.dialogVisible = !this.dialogVisible;
     },
-    changeItem({ item, chain, address }) {
-      console.log("--- changeItem ---", { item, chain, address });
-      if (!this.data[address]) {
-        throw Error(`请核对${address}是否正确`);
+    getBrowserUrl() {
+      if (this.browserurl) {
+        this.explorer = this.browserurl;
+      } else {
+        this.$metamask.getBrowserUrl().then((explorer) => {
+          this.explorer = explorer;
+        });
       }
-      if (!this.data[address][chain]) {
-        throw Error(`请核对${chain}是否正确`);
-      }
-      this.data[address][chain].forEach((currentItem, index) => {
-        if (item.hash === currentItem.hash) {
-          this.data[address][chain].splice(index, 1, item);
-          this.save({ address, chain });
-        }
-      });
-    },
-    removeItem({ item, chain, address }) {
-      console.log("--- removeItem ---", { item, chain, address });
-      if (!this.data[address]) {
-        throw Error(`请核对${address}是否正确`);
-      }
-      if (!this.data[address][chain]) {
-        throw Error(`请核对${chain}是否正确`);
-      }
-      this.data[address][chain].forEach((currentItem, index) => {
-        if (item.hash === currentItem.hash) {
-          this.data[address][chain].slice(index, 1);
-          this.save({ address, chain });
-        }
-      });
-    },
-    save({ address, chain }) {
-      this.list = this.data[address][chain];
-      sessionStorage[address + "-" + chain] = JSON.stringify(
-        this.data[address][chain]
-      );
-    },
-    clearAll({ address, chain }) {
-      console.log("--- clearAll ---", { chain, address });
-      this.data[address][chain] = [];
-      this.save({ address, chain });
     },
   },
 };
 </script>
 
-<style>
-.number-show {
-  height: 20px;
-}
-.number-panel ul {
-  padding: 0;
-}
-.number-panel ul li {
-  display: inline-block;
-  width: 28%;
-  height: 50px;
-  line-height: 50px;
-  margin-top: 20px;
-  background: #ddd;
-  border-radius: 8px;
-  margin-right: 10px;
-}
-.number-panel ul li input {
-  display: none;
-}
-</style>
 
 <i18n>
 {

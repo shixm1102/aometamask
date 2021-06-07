@@ -9,7 +9,9 @@
     "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\""
   },
   "dependencies": {
+    "@metamask/detect-provider": "^1.2.0",
     "core-js": "^3.6.5",
+    "ethers": "^5.3.0",
     "vue": "^2.6.11",
     "vue-i18n": "^8.22.3"
   },

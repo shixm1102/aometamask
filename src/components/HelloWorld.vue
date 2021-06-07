@@ -1,21 +1,12 @@
 <template>
   <div class="hello">
-    <test-panel ref="panel" :list="[]" />
-    <h1 @click="addItem">{{ msg }}</h1>
+    <test-panel ref="panel" />
   </div>
 </template>
 
 <script>
 export default {
   name: "HelloWorld",
-  props: {
-    msg: String,
-  },
-  methods: {
-    addItem() {
-      // this.$addItemRecord("eth", "world");
-    },
-  },
 };
 </script>
 
