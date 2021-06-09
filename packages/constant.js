@@ -39,7 +39,6 @@ export const CHAINS_INFO = {
     type: "main",
     label: "ETH_MAIN",
     decimals: 18,
-    chainType: "1",
   },
   56: {
     rpc: BNB_MAINNET,
@@ -52,7 +51,6 @@ export const CHAINS_INFO = {
     type: "main",
     label: "BNB_MAIN",
     decimals: 18,
-    chainType: "8",
   },
   66: {
     rpc: OKT_MAINNET,
@@ -65,7 +63,6 @@ export const CHAINS_INFO = {
     type: "main",
     label: "OKT_MAIN",
     decimals: 18,
-    chainType: "7",
   },
   70: {
     rpc: HOO_MAINNET,
@@ -78,7 +75,6 @@ export const CHAINS_INFO = {
     type: "main",
     label: "HOO_MAIN",
     decimals: 18,
-    chainType: "14",
   },
   128: {
     rpc: HT_MAINNET,
@@ -91,7 +87,6 @@ export const CHAINS_INFO = {
     type: "main",
     label: "HT_MAIN",
     decimals: 18,
-    chainType: "6",
   },
   256: {
     rpc: HT_TESTNET,
@@ -104,6 +99,5 @@ export const CHAINS_INFO = {
     type: "test",
     label: "HT_TEST",
     decimals: 18,
-    chainType: undefined,
   },
 };

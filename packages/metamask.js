@@ -1,9 +1,11 @@
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
+import BigNumber from "bignumber.js";
 import { CHAINS_INFO } from "./constant";
 
 export default class MetaMask {
   constructor(isDebugger) {
     this.isDebugger = isDebugger;
+    this.emitTxStatusChangeList = [];
   }
   initialize() {}
   /**
@@ -50,11 +52,19 @@ export default class MetaMask {
    * @returns {String} txHash
    * */
   async sendTx(transactionParameters) {
+    console.log("--- senfTx ---", transactionParameters);
     const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [transactionParameters],
     });
-
+    const { from, chainId } = transactionParameters;
+    this.addTxRecord({
+      address: from,
+      chainId,
+      txHash,
+      status: "pending",
+    });
+    this.onTxHash({ chainId, txHash });
     return txHash;
   }
   async signMessage(address, message) {
@@ -115,7 +125,7 @@ export default class MetaMask {
       method: "eth_getBalance",
       params: [address, "latest"],
     });
-    return BigNumber.from(balance).toString();
+    return new BigNumber(balance).toString();
   }
 
   onChainChanged(handleChainChanged) {
@@ -151,6 +161,13 @@ export default class MetaMask {
    * @returns
    */
   async callContract(contractAddress, abi, name, params) {
+    if (this.isDebugger)
+      console.log("--- callContract ---", {
+        contractAddress,
+        abi,
+        name,
+        params,
+      });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     // The Contract object
     const contract = new ethers.Contract(contractAddress, abi, provider);
@@ -166,23 +183,44 @@ export default class MetaMask {
    * @returns
    */
   async sendContract(contractAddress, abi, name, params) {
+    if (this.isDebugger)
+      console.log("--- sendContract ---", {
+        contractAddress,
+        abi,
+        name,
+        params,
+      });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     // The Contract object
     const contract = new ethers.Contract(contractAddress, abi, provider);
     const contractWithSigner = contract.connect(signer);
-    if (params) return await contractWithSigner[name](...params);
-    return await contractWithSigner[name]();
+    let result;
+    if (params) {
+      result = await contractWithSigner[name](...params);
+    } else {
+      result = await contractWithSigner[name]();
+    }
+    const { chainId, from, hash } = result;
+    this.addTxRecord({
+      address: from,
+      chainId,
+      txHash: hash,
+      status: "pending",
+    });
+    this.onTxHash({ chainId, txHash: hash });
+    return result;
   }
   /**
    * 监听交易hash状态变化
    * @param {String} txHash
    */
   onTxHash({ chainId, txHash }) {
+    if (this.isDebugger) console.log("--- onTxHash ---", { chainId, txHash });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     provider.once(txHash, (transaction) => {
       // Emitted when the transaction has been mined
-      console.log("transaction", transaction);
+      if (this.isDebugger) console.log("transaction", transaction);
       const { from, status } = transaction;
       this.changeTxStatus({
         address: from,
@@ -227,27 +265,39 @@ export default class MetaMask {
    * @returns
    */
   async getTxRecord(address, chainId) {
+    if (this.isDebugger)
+      console.log("--- getTxRecord ---", { address, chainId });
     const { _address, _chainId } = await this.getAddrChainId(address, chainId);
-    let list = sessionStorage[_address + _chainId]
-      ? JSON.parse(sessionStorage[_address + _chainId])
-      : [];
+    const key = (_address + _chainId).toLowerCase();
+    let list = sessionStorage[key] ? JSON.parse(sessionStorage[key]) : [];
     if (!Array.isArray(list)) {
       list = [];
     }
-
+    if (this.isDebugger) console.log("--- getTxRecord result ---", list);
     return list;
   }
   async getPendingTxRecord() {
-    const list = await this.getTxRecord();
+    if (this.isDebugger) console.log("--- getPendingTxRecord ---");
+    const { _address, _chainId } = await this.getAddrChainId();
+    const list = await this.getTxRecord(_address, _chainId);
     return list.filter((item) => {
       return item.status === "pending";
     });
+  }
+  async clearTxRecord(address, chainId) {
+    const { _address, _chainId } = await this.getAddrChainId(address, chainId);
+    const key = (_address + _chainId).toLowerCase();
+    console.log("key", key);
+    // sessionStorage[key] = [];
+    this.emitTxStatusChange([]);
   }
   /**
    * 新增记录
    * @param {Object} param0
    */
   async addTxRecord({ address, chainId, txHash, status }) {
+    if (this.isDebugger)
+      console.log("--- addTxRecord ---", { address, chainId, txHash, status });
     const { _address, _chainId } = await this.getAddrChainId(address, chainId);
     const list = await this.getTxRecord(_address, _chainId);
     list.push({
@@ -256,24 +306,60 @@ export default class MetaMask {
       txHash,
       status,
     });
+    const key = (_address + _chainId).toLowerCase();
+    sessionStorage[key] = JSON.stringify(list);
+    this.emitTxStatusChange(list);
   }
   /**
    * 改变记录状态
    * @param {Object} param0
    */
   async changeTxStatus({ address, chainId, txHash, status }) {
+    if (this.isDebugger)
+      console.log("--- changeTxStatus ---", {
+        address,
+        chainId,
+        txHash,
+        status,
+      });
     const { _address, _chainId } = await this.getAddrChainId(address, chainId);
     const list = await this.getTxRecord(_address, _chainId);
     const result = list.map((item) => {
       if (item.txHash === txHash) {
         return { address: _address, chainId: _chainId, txHash, status };
       }
+      return item;
     });
-    sessionStorage[_address + _chainId] = JSON.stringify(result);
-    const newlist = await this.getTxRecord();
-    this.emitTxStatusChange(newlist);
+    const key = (_address + _chainId).toLowerCase();
+    sessionStorage[key] = JSON.stringify(result);
+    this.emitTxStatusChange(result);
+  }
+  async emitTxStatusChange(result) {
+    if (this.isDebugger) console.log("--- emitTxStatusChange ---", result);
+    this.emitTxStatusChangeList.map((item) => {
+      if (typeof item === "function") {
+        item(result);
+      }
+    });
   }
   async onTxStatusChange(handleTxStatusChanged) {
-    this.emitTxStatusChange = handleTxStatusChanged;
+    this.emitTxStatusChangeList.push(handleTxStatusChanged);
+    console.log(this.emitTxStatusChangeList);
+  }
+  hideAddress(address, bef = 6, aft = 6) {
+    let len = Number(bef) + Number(aft);
+    if (address.length <= len) {
+      return address;
+    }
+    return address.substr(0, bef) + "..." + address.substr(-aft);
+  }
+  toDecimals(number, decimal = 6) {
+    return new BigNumber(number).decimalPlaces(decimal).toString();
+  }
+  fromToken(number, precision) {
+    return new BigNumber(number).shiftedBy(-precision).toString();
+  }
+  toToken(number, precision) {
+    return new BigNumber(number).shiftedBy(precision).toString();
   }
 }

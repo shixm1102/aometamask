@@ -1,15 +1,20 @@
 {
-  "name": "testmiddle",
+  "name": "ao-metamask",
   "version": "0.1.0",
-  "private": true,
+  "description": "the metamask plugin on vuejs",
+  "main": "lib/ao-metamask.umd.min.js",
+  "keyword": "metamask vue",
+  "author": "shixm",
+  "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\""
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
+    "lib": "vue-cli-service build --target lib --name aometamask --dest lib packages/index.js"
   },
   "dependencies": {
-    "@metamask/detect-provider": "^1.2.0",
+    "bignumber.js": "^9.0.1",
     "core-js": "^3.6.5",
     "ethers": "^5.3.0",
     "vue": "^2.6.11",
