@@ -1,8 +1,8 @@
 {
-  "name": "aometamask",
+  "name": "shixmetamask",
   "version": "0.1.0",
   "description": "the metamask plugin on vuejs",
-  "main": "lib/aometamask.umd.min.js",
+  "main": "lib/shixmetamask.umd.min.js",
   "keyword": "metamask vue",
   "author": "shixm",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
-    "lib": "vue-cli-service build --target lib --name aometamask --dest lib packages/index.js"
+    "lib": "vue-cli-service build --target lib --name shixmetamask --dest lib packages/index.js"
   },
   "dependencies": {
     "bignumber.js": "^9.0.1",

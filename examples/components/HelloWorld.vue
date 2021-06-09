@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <aometamask />
+    <shixmetamask />
   </div>
 </template>
 
