@@ -1,9 +1,9 @@
 import Vue from "vue";
 import App from "./App.vue";
-import shixmetamask from "../packages/index";
+import aometamask from "../packages/index";
 import i18n from "./i18n";
 Vue.config.productionTip = false;
-Vue.use(shixmetamask);
+Vue.use(aometamask);
 
 new Vue({
   i18n,

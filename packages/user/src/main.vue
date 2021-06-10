@@ -61,7 +61,7 @@
 <script>
 import { CHAINS_INFO } from "../../constant";
 export default {
-  name: "shixmetamask", // 这里需要注意下，我们是采用的全局注入我们的组件，所以在后面因为我们的组件后，会直接使用这个命名的标签
+  name: "aometamask", // 这里需要注意下，我们是采用的全局注入我们的组件，所以在后面因为我们的组件后，会直接使用这个命名的标签
   props: ["browserurl", "tokenInfo"],
   data() {
     return {
