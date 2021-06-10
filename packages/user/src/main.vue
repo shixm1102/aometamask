@@ -37,19 +37,18 @@
             >
               {{ $metamask.hideAddress(item.txHash) }}
             </a>
-            <p class="status">{{ item.status }}</p>
-            <!-- <p
-              class="status pending el-icon-loading"
+            <p
               v-if="item.status === 'pending'"
+              class="status iconfont icon-icon_loading"
             ></p>
             <p
-              class="status success el-icon-success"
               v-if="item.status === 'success'"
+              class="status iconfont icon-icon_success"
             ></p>
             <p
-              class="status failed el-icon-warning"
               v-if="item.status === 'failed'"
-            ></p> -->
+              class="status iconfont icon-icon_failed"
+            ></p>
           </li>
         </ul>
         <p class="nodata" v-else>NO DATA</p>
@@ -228,6 +227,45 @@ export default {
   font-size: 14px;
   text-align: center;
   background-color: #f7f8fa;
+}
+</style>
+<style scoped>
+@font-face {
+  font-family: "iconfont"; /* Project id  */
+  src: url("./iconfont.ttf?t=1623317988312") format("truetype");
+}
+@keyframes animate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon-icon_loading {
+  animation: animate 1.5s linear infinite;
+}
+.icon-icon_loading:before {
+  content: "\e64a";
+  color: #909399;
+}
+
+.icon-icon_failed:before {
+  content: "\e65d";
+  color: #f56c6c;
+}
+
+.icon-icon_success:before {
+  content: "\e65f";
+  color: #67c23a;
 }
 </style>
 
