@@ -1,4 +1,4 @@
-# testmiddle
+# aometamask
 
 ## Project setup
 ```
