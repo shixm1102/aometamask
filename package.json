@@ -1,6 +1,6 @@
 {
   "name": "aometamask",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "the metamask plugin on vuejs",
   "main": "lib/aometamask.umd.min.js",
   "keyword": "metamask vue",
