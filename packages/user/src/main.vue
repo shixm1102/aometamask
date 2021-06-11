@@ -2,11 +2,11 @@
   <section class="panelWrap">
     <div class="box">
       <div class="left">
-        {{ $i18n.locale }}
         {{ $metamask.toDecimals($metamask.fromToken(balance, decimals)) }}
         {{ symbol }}
       </div>
       <div class="right address" @click="handleClick">
+        <span v-if="hasPending" class="iconfont icon-icon_loading"></span>
         {{ $metamask.hideAddress(address) }}
       </div>
     </div>
@@ -70,8 +70,9 @@ export default {
       explorer: "",
       symbol: "",
       decimals: "",
-      dialogVisible: true,
+      dialogVisible: false,
       list: [],
+      hasPending: false,
     };
   },
   watch: {
@@ -81,6 +82,7 @@ export default {
   },
   components: {},
   created() {
+    if(!(this.$i18n && this.$i18n.locale)) {this.$i18n.locale = 'zh'}
     // 获取地址
     this.$metamask.connect().then((accounts) => {
       this.address = accounts[0];
@@ -113,9 +115,18 @@ export default {
         this.getBrowserUrl();
       });
 
+      // pending list
+      this.$metamask.getPendingTxRecord().then((list) => {
+        this.hasPending = list.length ? true : false;
+      });
+
       this.$metamask.onTxStatusChange((list) => {
         console.log("--- onTxStatusChange ---");
         this.list = list;
+
+        this.$metamask.getPendingTxRecord().then((list) => {
+          this.hasPending = list.length ? true : false;
+        });
       });
     });
   },
@@ -163,6 +174,9 @@ export default {
 }
 .panelWrap > .box > div.right {
   background-color: #2a2a3f;
+}
+.panelWrap > .box > div.right span {
+  display: inline-block;
 }
 </style>
 <style scoped>
@@ -251,11 +265,11 @@ export default {
   -moz-osx-font-smoothing: grayscale;
 }
 .icon-icon_loading {
-  animation: animate 1.5s linear infinite;
+  animation: animate 2s linear infinite;
 }
 .icon-icon_loading:before {
   content: "\e64a";
-  color: #909399;
+  color: #409eff;
 }
 
 .icon-icon_failed:before {
