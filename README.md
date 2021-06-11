@@ -1,24 +1,16 @@
 # aometamask
 
-## Project setup
+## Install
 ```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-```
-yarn serve
+npm install aometamask -S
 ```
 
-### Compiles and minifies for production
+### Quick Start
 ```
-yarn build
-```
+import Vue from 'vue'
+import aometamask from 'aometamask'
 
-### Lints and fixes files
-```
-yarn lint
-```
+Vue.use(aometamask)
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+<aometamask />
+```
