@@ -1,10 +1,14 @@
 # aometamask
 
+
+
 ## Install
 
 ```bash
 npm install aometamask -S
 ```
+
+
 
 ## Quick Start
 
@@ -19,9 +23,11 @@ Vue.use(aometamask);
 
 template
 
-```
+```vue
 <aometamask />
 ```
+
+
 
 ## Properties
 
@@ -31,6 +37,19 @@ template
 
 `browserurl: String`
 区块浏览器地址
+
+##### Example
+
+```vue
+<aometamask browserurl="https://hecoinfo.com" :tokenInfo="{
+	symbol: "HT",
+	decimals: "18"
+}" />
+```
+
+
+
+
 
 ## Contents
 
