@@ -82,23 +82,14 @@ export default {
   },
   components: {},
   created() {
-    if(!(this.$i18n && this.$i18n.locale)) {this.$i18n.locale = 'zh'}
+    if (!(this.$i18n && this.$i18n.locale)) {
+      this.$i18n.locale = "zh";
+    }
     // 获取地址
     this.$metamask.connect().then((accounts) => {
       this.address = accounts[0];
       // 获取symbol和decimals
-      if (this.tokenInfo && this.tokenInfo.symbol && this.tokenInfo.decimals) {
-        this.symbol = this.tokenInfo.symbol;
-        this.decimals = this.tokenInfo.decimals;
-      } else {
-        this.$metamask.getChainId().then((chainId) => {
-          this.chainId = chainId;
-          if (Object.keys(CHAINS_INFO).includes(chainId)) {
-            this.symbol = CHAINS_INFO[chainId].symbol;
-            this.decimals = CHAINS_INFO[chainId].decimals;
-          }
-        });
-      }
+      this.getTokenInfo();
 
       // 获取余额
       this.$metamask.getBalance(this.address).then((balance) => {
@@ -120,10 +111,9 @@ export default {
         this.hasPending = list.length ? true : false;
       });
 
-      this.$metamask.onTxStatusChange((list) => {
-        console.log("--- onTxStatusChange ---");
+      this.$metamask.onTxStatusChanged((list) => {
+        console.log("--- onTxStatusChanged ---");
         this.list = list;
-
         this.$metamask.getPendingTxRecord().then((list) => {
           this.hasPending = list.length ? true : false;
         });
@@ -137,12 +127,46 @@ export default {
     handleClear() {
       this.$metamask.clearTxRecord();
     },
+    getTokenInfo() {
+      if (this.tokenInfo && this.tokenInfo.symbol && this.tokenInfo.decimals) {
+        this.symbol = this.tokenInfo.symbol;
+        this.decimals = this.tokenInfo.decimals;
+      } else {
+        this.$metamask.getChainId().then((chainId) => {
+          this.chainId = chainId;
+          if (Object.keys(CHAINS_INFO).includes(chainId)) {
+            this.symbol = CHAINS_INFO[chainId].symbol;
+            this.decimals = CHAINS_INFO[chainId].decimals;
+          } else {
+            if (
+              this.tokenInfo &&
+              this.tokenInfo.symbol &&
+              this.tokenInfo.decimals
+            ) {
+              this.symbol = this.tokenInfo.symbol;
+              this.decimals = this.tokenInfo.decimals;
+            } else {
+              console.error("缺少tokenInfo信息");
+            }
+          }
+        });
+      }
+    },
     getBrowserUrl() {
       if (this.browserurl) {
         this.explorer = this.browserurl;
       } else {
-        this.$metamask.getBrowserUrl().then((explorer) => {
-          this.explorer = explorer;
+        this.$metamask.getChainId().then((chainId) => {
+          this.chainId = chainId;
+          if (Object.keys(CHAINS_INFO).includes(chainId)) {
+            this.explorer = CHAINS_INFO[chainId].explorer;
+          } else {
+            if (this.browserurl) {
+              this.explorer = this.browserurl;
+            } else {
+              console.error("缺少browserurl信息");
+            }
+          }
         });
       }
     },
