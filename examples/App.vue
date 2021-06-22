@@ -23,7 +23,7 @@ export default {
     };
   },
   created() {
-    this.sendContract();
+    // this.sendContract();
   },
   methods: {
     sendTx() {
