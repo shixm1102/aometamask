@@ -5,13 +5,5 @@ module.exports = {
       // page 的入口
       entry: "examples/main.js",
     },
-  },
-  pluginOptions: {
-    i18n: {
-      locale: "en",
-      fallbackLocale: "en",
-      localeDir: "locales",
-      enableInSFC: true,
-    },
-  },
+  }
 };

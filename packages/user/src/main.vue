@@ -24,8 +24,12 @@
         </div>
         <!-- list title -->
         <div class="listTitleBox">
-          <p class="title">{{ $t("recentTransactions") }}</p>
-          <p class="clear" @click="handleClear">{{ $t("clearAll") }}</p>
+          <p class="title">
+            {{ $i18n.locale === "en" ? "Recent Transactions" : "最近的交易" }}
+          </p>
+          <p class="clear" @click="handleClear">
+            {{ $i18n.locale === "en" ? "clear all" : "清除所有" }}
+          </p>
         </div>
         <!-- list -->
         <ul class="listBox" v-if="list.length">
@@ -82,8 +86,9 @@ export default {
   },
   components: {},
   created() {
-    if (!(this.$i18n && this.$i18n.locale)) {
-      this.$i18n.locale = "zh";
+    if (!this.$i18n || !this.$i18n.locale) {
+      this.$i18n = {};
+      this.$set(this.$i18n, "locale", "zh");
     }
     // 获取地址
     this.$metamask.connect().then((accounts) => {
@@ -306,16 +311,3 @@ export default {
   color: #67c23a;
 }
 </style>
-
-<i18n>
-{
-  "en": {
-    "recentTransactions": "Recent Transactions",
-    "clearAll": "clear all"
-  },
-  "zh": {
-    "recentTransactions": "最近的交易",
-    "clearAll": "清除所有"
-  }
-}
-</i18n>
